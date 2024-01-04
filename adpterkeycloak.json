@@ -1,0 +1,15 @@
+{
+    "realm": "subscription",
+    "auth-server-url": "http://localhost:8085/",
+    "ssl-required": "external",
+    "resource": "subscription_service",
+    "verify-token-audience": false,
+    "credentials": {
+      "secret": "cIty7O9VoR078uVED3A1IPDyWREesAtc"
+    },
+    "use-resource-role-mappings": true,
+    "confidential-port": 0,
+    "policy-enforcer": {
+      "credentials": {}
+    }
+  }

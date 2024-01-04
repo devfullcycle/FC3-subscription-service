@@ -1,0 +1,78 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ./src/API/Subscription.API/Dockerfile
+    ports:
+      - "5001:80"
+      - "5002:443"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - myapp
+  keycloak:
+    image: quay.io/keycloak/keycloak:21.1
+    command: start-dev
+    environment:
+      KC_DB: mysql
+      KC_DB_URL: jdbc:mysql://mysql:3306/keycloak
+      KC_DB_USERNAME: root
+      KC_DB_PASSWORD: Pl33nkml1.
+      KC_HOSTNAME: localhost
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8085:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - myapp
+  postgres:
+    image: postgres:latest
+    volumes:
+      - ./src/Infraestructure/Sql/Init-Db.sql:/docker-entrypoint-initdb.d/Init-Db.sql
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD:  "Postgres2022!"
+    healthcheck:
+      test: "exit 0"
+    ports:
+      - "5432:5432"
+    networks:
+      - myapp
+  cache:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81 
+    volumes:
+      - cache:/data
+    networks:
+      - myapp
+  mysql:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD:  Pl33nkml1.
+      MYSQL_DATABASE: keycloak
+    volumes:
+      - "mysqlvolume:/var/lib/mysql"
+    networks:
+      - myapp
+    ports:
+     - 3306:3306
+    healthcheck:
+      retries: 3
+      timeout: 10s
+      test: ["CMD","mysqladmin","ping","-h","localhost"]
+      interval: 10s
+volumes:
+  cache:
+    driver: local
+  mysqlvolume:
+    driver: local
+networks:
+  myapp:
+    driver: bridge   
